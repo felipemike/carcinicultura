@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle de Qualidade de Ração</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+  <h1>Controle de Qualidade de Ração</h1>
+  
+  <div id="inputs">
+    <label for="manha">Ração Pela Manhã (kg):</label>
+    <input type="number" id="manha">
+    <label for="tarde">Ração Pela Tarde (kg):</label>
+    <input type="number" id="tarde">
+    <button onclick="adicionarRacao()">Adicionar Ração</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Ração Pela Manhã (kg)</th>
+        <th>Ração Pela Tarde (kg)</th>
+        <th>Total de Ração (kg)</th>
+        <th>Ação</th>
+      </tr>
+    </thead>
+    <tbody id="table-body">
+    </tbody>
+  </table>
+
+  <p>Total de Ração Usada: <span id="totalRacao"></span> kg</p>
+
+  <script src="
+https://cdn.jsdelivr.net/npm/mysql2@3.3/index.min.js
+"></script>
+  <script src="script.js"></script>
+</body>
+</html>
