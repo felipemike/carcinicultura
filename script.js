@@ -1,98 +1,97 @@
-const mysql = require('mysql2');
-
-let connection;
-
-async function main() {
-    connection = mysql.createPool({
-      host: "aws.connect.psdb.cloud",
-      user: "3yp6c2uj56601x90oamx",
-      password: "pscale_pw_YvAqoKrO2NuAlKdaHynDKqA4qACOdXSDz3QCcN0HvCs",
-      database: "felipe",
-      ssl: {
-        rejectUnauthorized: false
-      }
-    });
-    console.log('Conectado ao banco de dados!');
-}
-main();
-
 function adicionarRacao() {
-  const dataAtual = new Date();
   const manhaInput = document.getElementById("manha");
   const tardeInput = document.getElementById("tarde");
-  const tbody = document.getElementById("table-body");
 
-  const manha = parseFloat(manhaInput.value);
-  const tarde = parseFloat(tardeInput.value);
+  const manha = parseFloat(manhaInput.value) || 0;
+  const tarde = parseFloat(tardeInput.value) || 0;
   const total = manha + tarde;
 
-  const row = document.createElement("tr");
+  // Fazer uma chamada AJAX para o arquivo PHP
+  const xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState === 4 && this.status === 200) {
+      // Atualizar a tabela com o lançamento adicionado
+      const tbody = document.getElementById("table-body");
+      tbody.innerHTML = this.responseText;
 
-  const dataCell = document.createElement("td");
-  dataCell.textContent = dataAtual.toLocaleDateString();
-  row.appendChild(dataCell);
+      // Limpar os campos de entrada
+      manhaInput.value = "";
+      tardeInput.value = "";
 
-  const manhaCell = document.createElement("td");
-  manhaCell.textContent = manha;
-  row.appendChild(manhaCell);
-
-  const tardeCell = document.createElement("td");
-  tardeCell.textContent = tarde;
-  row.appendChild(tardeCell);
-
-  const totalCell = document.createElement("td");
-  totalCell.textContent = total;
-  row.appendChild(totalCell);
-
-  const actionCell = document.createElement("td");
-  const deleteButton = document.createElement("button");
-  deleteButton.textContent = "x";
-  deleteButton.addEventListener("click", function() {
-    excluirLancamento(row);
-  });
-  actionCell.appendChild(deleteButton);
-  row.appendChild(actionCell);
-
-  tbody.appendChild(row);
-
-  manhaInput.value = "";
-  tardeInput.value = "";
-
-  const query = 'INSERT INTO Entries (data, manha, tarde) VALUES (?, ?, ?)';
-  const values = [dataAtual, manha, tarde];
-
-  connection.query(query, values, function (error, results, fields) {
-    if (error) {
-      console.error('Erro ao registrar os dados da ração:', error.message);
-    } else {
-      console.log('Dados da ração registrados no banco de dados!');
-      atualizarTotalRacaoEDias();
+      // Atualizar o total de ração
+      atualizarTotalRacao();
     }
-  });
+  };
+  xhttp.open("POST", "adicionar_lancamento.php", true);
+  xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
-  atualizarTotalRacaoEDias();
+  // Envie os valores de "manha" e "tarde" para o arquivo PHP
+  const dataToSend = "manha=" + manha + "&tarde=" + tarde;
+  xhttp.send(dataToSend);
 }
 
-function excluirLancamento(row) {
-  const tbody = document.getElementById("table-body");
-  tbody.removeChild(row);
+function editarLancamento(button) {
+  const row = button.parentNode.parentNode;
+  const dataCell = row.cells[0];
+  const manhaCell = row.cells[1];
+  const tardeCell = row.cells[2];
 
-  atualizarTotalRacaoEDias();
+  const data = dataCell.textContent;
+  const manha = parseFloat(manhaCell.textContent) || 0;
+  const tarde = parseFloat(tardeCell.textContent) || 0;
+
+  // Fazer uma chamada AJAX para o arquivo PHP
+  const xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState === 4 && this.status === 200) {
+      // Atualizar a tabela com o lançamento atualizado
+      const tbody = document.getElementById("table-body");
+      tbody.innerHTML = this.responseText;
+
+      // Atualizar o total de ração
+      atualizarTotalRacao();
+    }
+  };
+  xhttp.open("POST", "editar_lancamento.php", true);
+  xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+  // Envie os valores de "data", "manha" e "tarde" para o arquivo PHP
+  const dataToSend = "data=" + data + "&manha=" + manha + "&tarde=" + tarde;
+  xhttp.send(dataToSend);
 }
 
-function atualizarTotalRacaoEDias() {
-  const tbody = document.getElementById("table-body");
-  const rows = tbody.getElementsByTagName("td");
-  let totalRacao = 0;
-  
-  for (let i = 0; i < rows.length; i++) {
-  const row = rows[i];
-  const totalCell = row.getElementsByTagName("td")[3];
-  const total = parseFloat(totalCell.textContent);
-  totalRacao += total;
-  }
-  
-  const totalRacaoElement = document.getElementById("totalRacao");
-  
-  totalRacaoElement.textContent = totalRacao.toFixed(2);
-  }
+function atualizarTotalRacao() {
+  // Fazer uma chamada AJAX para o arquivo PHP
+  const xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState === 4 && this.status === 200) {
+      // Atualizar o valor do total de ração
+      const totalRacaoSpan = document.getElementById("totalRacao");
+      totalRacaoSpan.textContent = this.responseText;
+    }
+  };
+  xhttp.open("GET", "calcular_total_racao.php", true);
+  xhttp.send();
+}
+
+function excluirLancamento(button) {
+  const row = button.parentNode.parentNode;
+  const dataCell = row.cells[0];
+  const data = dataCell.textContent;
+
+  // Fazer uma chamada AJAX para o arquivo PHP
+  const xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState === 4 && this.status === 200) {
+      // Atualizar a tabela com o lançamento removido
+      const tbody = document.getElementById("table-body");
+      tbody.innerHTML = this.responseText;
+
+      // Atualizar o total de ração
+      atualizarTotalRacao();
+    }
+  };
+  xhttp.open("POST", "excluir_lancamento.php", true);
+  xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  xhttp.send("data=" + data);
+}
