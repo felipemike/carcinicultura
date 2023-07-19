@@ -1,7 +1,7 @@
 <?php
 $host = 'localhost';
 $username = 'root';
-$password = 'blink182182';
+$password = 'senhadobanco';
 $database = 'controle_racao';
 
 $conn = mysqli_connect($host, $username, $password, $database);
